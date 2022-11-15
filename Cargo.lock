@@ -793,7 +793,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "protonation_states"
+name = "protonation-states-backend"
 version = "0.1.0"
 dependencies = [
  "rocket",
