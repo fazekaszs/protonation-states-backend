@@ -1,6 +1,26 @@
+/// Distinguishes the two charge state types of amino acids.
 #[derive(Clone, Debug)]
 pub enum GroupChargeOptions {
     PosOrNeu, NeuOrNeg
+}
+
+impl GroupChargeOptions {
+
+    pub fn from_str(arg: &str) -> Result<Self, String> {
+        match arg {
+            "PosOrNeu" => Ok(Self::PosOrNeu),
+            "NeuOrNeg" => Ok(Self::NeuOrNeg),
+            _ => Err(format!("Unable to deserialize \"{}\" to GroupChargeOptions", arg))
+        }
+    }
+
+    pub fn to_tuple(&self) -> (i32, i32) {
+
+        match self { 
+            GroupChargeOptions::PosOrNeu => (1, 0), 
+            GroupChargeOptions::NeuOrNeg => (0, -1) 
+        }
+    }
 }
 
 /// Represents an ionisable group with a certain Ka
@@ -11,6 +31,31 @@ pub enum GroupChargeOptions {
 pub struct IonisableGroup {
     pub ka: f32,
     pub gco: GroupChargeOptions
+}
+
+impl IonisableGroup {
+
+    pub fn from_str(arg: &str) -> Result<Self, String> {
+
+        let elements = arg.split(",").map(|x| x.trim()).collect::<Vec<_>>();
+
+        if elements.len() != 2 { 
+            let err_str = format!("Unable to parse \"{}\"! More than two elements detected!", arg);
+            return Err(err_str);
+        }
+
+        let gco = GroupChargeOptions::from_str(elements[0])?;
+
+        let Ok(pka) = elements[1].parse::<f32>() else {
+
+            let err_str = format!("Unable to parse \"{}\"! Second element is not a valid number!", arg);
+            return Err(err_str);            
+        };
+
+        Ok(IonisableGroup { ka: 10f32.powf(-pka), gco })
+
+    }
+
 }
 
 /// Stores a charge microstate with a certain charge pattern
