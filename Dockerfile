@@ -1,5 +1,5 @@
 FROM rust:latest
-EXPOSE 8000
+EXPOSE 8181
 
 WORKDIR /app
 COPY . .
