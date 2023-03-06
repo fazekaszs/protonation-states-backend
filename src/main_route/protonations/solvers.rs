@@ -16,7 +16,7 @@ pub fn solve_point(sequence: &[IonisableGroup], h_ion_conc: f32, tol: f32) -> Ve
 
     for group in sequence {
 
-        let group_charges = match group.gco { GroupChargeOptions::PosOrNeu => (1, 0), GroupChargeOptions::NeuOrNeg => (0, -1) };
+        let group_charges = group.gco.to_tuple();
         let coeff = h_ion_conc / (h_ion_conc + group.ka);
 
         // Create high pH microstates

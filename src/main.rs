@@ -1,60 +1,13 @@
 
 #[macro_use] extern crate rocket;
-mod protonations;
-use protonations::sequence_parser::Config;
-use protonations::solvers::{self, MacroStateDistro};
 
-use rocket::serde::{Deserialize, json::Json};
+mod main_route;
+use main_route::index;
 
-#[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
-struct PostPayload<'r> {
-    sequence: &'r str,
-    ph_range: [f32; 3],
-    tol: f32
-}
+mod cors;
+use cors::{CORS, all_options};
 
-#[post("/protonations", format="application/json", data="<payload>")]
-fn index(payload: Json<PostPayload<'_>>) -> Result<Json<MacroStateDistro>, String> {
-
-    let config = Config::build("config")?;
-
-    let sequence = config.parse_sequence(&payload.sequence);
-
-    if payload.ph_range[0] >= payload.ph_range[1] {
-        
-        let err_str = format!(
-            "Invalid boundaries for pH range! {} should be smaller than {}",
-            payload.ph_range[0],
-            payload.ph_range[1]
-        );
-
-        return Err(err_str);
-    }
-
-    if payload.ph_range[1] - payload.ph_range[0] < payload.ph_range[2] {
-
-        let err_str = format!(
-            "Invalid step size for pH range! ({}, {}) should contain {}",
-            payload.ph_range[0],
-            payload.ph_range[1],
-            payload.ph_range[2]
-        );
-
-        return Err(err_str);
-    }
-
-    let mut ph_values = vec![payload.ph_range[0], ];
-    while *ph_values.last().unwrap() < payload.ph_range[1] {
-        ph_values.push(ph_values.last().unwrap() + payload.ph_range[2]);
-    }
-
-    let solution = solvers::solve_range(&sequence, &ph_values, payload.tol);
-
-    Ok(Json(solution))
-}
-
-#[launch]
+#[rocket::launch]
 fn app() -> _ {
-    rocket::build().mount("/", rocket::routes![index])
+    rocket::build().attach(CORS).mount("/", rocket::routes![all_options, index])
 }
