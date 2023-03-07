@@ -1,7 +1,6 @@
 FROM rust:latest
-EXPOSE 8181
+EXPOSE 8281
 
 WORKDIR /app
 COPY . .
-RUN cargo install --path .
-CMD [ "protonation-states-backend" ]
+CMD [ "/bin/bash", "-c", "cargo run --release > backend.log 2>&1" ]
